@@ -1,8 +1,7 @@
 from fastmcp import FastMCP
 from javascript import require, On
 mineflayer = require('mineflayer')
-pathfinder = require('mineflayer-pathfinder')
-from tools.chat import chat
+from tools.chat import attack
 
 import anthropic 
 
@@ -11,10 +10,19 @@ client = anthropic.Anthropic(api_key="")
 mcp = FastMCP("Jerry")
 
 @mcp.tool()
-def chat_tool(sender: str, message: str) -> str:
-    """Send a chat message as the bot."""
-    chat(sender, message)
-    return f"Sent message from {sender}: {message}"
+def attack_tool():
+    print(attack())
+
+tools = [
+    {
+        "name": "attack",
+        "description": "Attack the nearest entity",
+        "input_schema": {
+            "type": "object",
+            "properties": {}
+        }
+    }
+]
 
 RANGE_GOAL = 1
 BOT_USERNAME = 'Jerry'
@@ -35,10 +43,16 @@ def handleMsg( sender, message, *args):
         response = client.messages.create(
             model="claude-sonnet-4-6",
             messages=[
-                {"role": "user", "content": "You are a helpful assistant that responds to Minecraft chat messages. NO EXTRA TEXT. Just respond with a short message."},
+                {"role": "user", "content": "From any message, Use the attack tool. NO EXTRA TEXT. Just respond with a short message."},
             ],
             max_tokens=50,
+            tools = tools,
         )
+
+        for block in response.content:
+            if block.type == "tool_use" and block.name == "attack":
+                attack_tool()
+
         reply = response.content[0].text
         bot.chat(reply)
 
