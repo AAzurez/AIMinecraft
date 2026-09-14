@@ -3,12 +3,16 @@ from javascript import require, On
 from tools.chat import chat
 from tools.attack import attackEntity
 from tools.destroy import destroy
+from dotenv import load_dotenv, dotenv_values
+import os
+
+load_dotenv()
 
 mineflayer = require('mineflayer')
 
 import anthropic 
 
-client = anthropic.Anthropic()
+client = anthropic.Anthropic(api_key = os.getenv("API_KEY"))
 
 mcp = FastMCP("Server")
 
@@ -25,12 +29,12 @@ def attack_tool(bot):
     attackEntity(bot)
 
 @mcp.tool()
-def chat_tool():
-    print(chat())
+def chat_tool(sender, message):
+    print(chat(sender, message))
 
 @mcp.tool()
-def destroy_tool():
-    print(destroy())
+def destroy_tool(bot):
+    print(destroy(bot))
 
 tools = [
     {
@@ -74,25 +78,25 @@ def handleMsg( sender, message, *args):
             messages=[
                 {"role": "user", "content": 
                  
-                 "From any message, USE THE attack TOOL. NO EXTRA TEXT. Just respond with a short message."
+                 "Goal: Beat the Ender Dragon. The General Timeline is to get wood first and then get stone."
+                 "If I need to get wood -> I need to break wood"
+                 "If I need to get stone -> I need to break stone"
 
                 },
             ],
-            max_tokens=50,
+            max_tokens=100,
             tools = tools,
         )
 
         for block in response.content:
             print(block)
             if block.type == "tool_use" and block.name == "attack":
-                attack_tool(bot)
+                attack_tool()
             elif block.type == "tool_use" and block.name == "chat":
-                chat_tool()
+                msg = block.input.get('message')
+                bot.chat(msg)
             elif block.type == "tool_use" and block.name == "destroy":
                 destroy_tool()
-
-"""        reply = response.content[0].text
-        bot.chat(reply)"""
 
 if __name__ == "__main__":
     mcp.run()

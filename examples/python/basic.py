@@ -20,10 +20,19 @@ def handle(*args):
   movements = pathfinder.Movements(bot)
 
   @On(bot, 'chat')
-  def handleMsg( sender, message, *args):
+  def handleMsg(sender, message, *args):
     print("Got message", sender, message)
     if sender != BOT_USERNAME:
       bot.chat(f'Hi, you said "{message}"')
+      if 'test' in message:
+         block = bot.findBlock({
+        'matching': bot.registry.blocksByName['oak_leaves'].id,
+        'maxDistance': 32
+        })
+      if block is None:
+        bot.chat(f"No {block_name} found nearby.")
+        return
+      bot.dig(block)
       if 'come' in message:
         player = bot.players[sender]
         print("Target", player)

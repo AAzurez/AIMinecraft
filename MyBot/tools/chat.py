@@ -1,3 +1,3 @@
-def chat():
-    print('Chatting Tool is running')
-    return 'Chatting'
+def chat(sender, message):
+    print(f"{sender}: {message}")
+    return 
